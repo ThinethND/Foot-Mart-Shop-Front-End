@@ -1,25 +1,70 @@
 const apiUrl = "http://localhost:8081/api/products";
 
 async function loadProducts() {
-  const response = await fetch(apiUrl);
-  const products = await response.json();
+  try {
+    const response = await fetch(apiUrl);
+    const products = await response.json();
 
-  const continer = document.getElementById(product-list);
-  continer.innerHTML = products 
-  .map(
-    (p) => `
-    <div class="product">
-      <img src="${p.imageUrl}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p>${p.description}</p>
-      <strong>Rs. ${p.price}</strong>
-    </div>
-    `
-  )
-  .join("");
+    // Get the product grid container (the "All" tab content)
+    const container = document.querySelector('#nav-all .product-grid');
+    
+    if (!container) {
+      console.error('Product container not found');
+      return;
+    }
+
+    // Clear existing static products
+    container.innerHTML = '';
+
+    // Generate product cards from API data
+    container.innerHTML = products
+      .map(
+        (product) => `
+        <div class="col">
+          <div class="product-item">
+            ${product.discount ? `<span class="badge bg-success position-absolute m-3">-${product.discount}%</span>` : ''}
+            <a href="#" class="btn-wishlist"><svg width="24" height="24"><use xlink:href="#heart"></use></svg></a>
+            <figure>
+              <a href="index.html" title="${product.name}">
+                <img src="${product.imageUrl || 'images/thumb-bananas.png'}" class="tab-image" alt="${product.name}">
+              </a>
+            </figure>
+            <h3>${product.name}</h3>
+            <span class="qty">${product.unit || '1 Unit'}</span>
+            <span class="rating">
+              <svg width="24" height="24" class="text-primary"><use xlink:href="#star-solid"></use></svg> 
+              ${product.rating || '4.5'}
+            </span>
+            <span class="price">$${product.price.toFixed(2)}</span>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="input-group product-qty">
+                <span class="input-group-btn">
+                  <button type="button" class="quantity-left-minus btn btn-danger btn-number" data-type="minus">
+                    <svg width="16" height="16"><use xlink:href="#minus"></use></svg>
+                  </button>
+                </span>
+                <input type="text" id="quantity" name="quantity" class="form-control input-number" value="1">
+                <span class="input-group-btn">
+                  <button type="button" class="quantity-right-plus btn btn-success btn-number" data-type="plus">
+                    <svg width="16" height="16"><use xlink:href="#plus"></use></svg>
+                  </button>
+                </span>
+              </div>
+              <a href="#" class="nav-link">Add to Cart <iconify-icon icon="uil:shopping-cart"></iconify-icon></a>
+            </div>
+          </div>
+        </div>
+      `
+      )
+      .join("");
+
+    // Re-initialize product quantity controls after loading products
+    initProductQty();
+
+  } catch (error) {
+    console.error('Error loading products:', error);
+  }
 }
-
-loadProducts();
 
 (function($) {
 
@@ -27,22 +72,22 @@ loadProducts();
 
   var initPreloader = function() {
     $(document).ready(function($) {
-    var Body = $('body');
-        Body.addClass('preloader-site');
+      var Body = $('body');
+      Body.addClass('preloader-site');
     });
     $(window).load(function() {
-        $('.preloader-wrapper').fadeOut();
-        $('body').removeClass('preloader-site');
+      $('.preloader-wrapper').fadeOut();
+      $('body').removeClass('preloader-site');
     });
   }
 
   // init Chocolat light box
-	var initChocolat = function() {
-		Chocolat(document.querySelectorAll('.image-link'), {
-		  imageSize: 'contain',
-		  loop: true,
-		})
-	}
+  var initChocolat = function() {
+    Chocolat(document.querySelectorAll('.image-link'), {
+      imageSize: 'contain',
+      loop: true,
+    })
+  }
 
   var initSwiper = function() {
 
@@ -135,17 +180,17 @@ loadProducts();
       var quantity = 0;
 
       $el_product.find('.quantity-right-plus').click(function(e){
-          e.preventDefault();
-          var quantity = parseInt($el_product.find('#quantity').val());
-          $el_product.find('#quantity').val(quantity + 1);
+        e.preventDefault();
+        var quantity = parseInt($el_product.find('#quantity').val());
+        $el_product.find('#quantity').val(quantity + 1);
       });
 
       $el_product.find('.quantity-left-minus').click(function(e){
-          e.preventDefault();
-          var quantity = parseInt($el_product.find('#quantity').val());
-          if(quantity>0){
-            $el_product.find('#quantity').val(quantity - 1);
-          }
+        e.preventDefault();
+        var quantity = parseInt($el_product.find('#quantity').val());
+        if(quantity>0){
+          $el_product.find('#quantity').val(quantity - 1);
+        }
       });
 
     });
@@ -169,6 +214,9 @@ loadProducts();
     initProductQty();
     initJarallax();
     initChocolat();
+
+    // Load products from API
+    loadProducts();
 
   }); // End of a document
 
