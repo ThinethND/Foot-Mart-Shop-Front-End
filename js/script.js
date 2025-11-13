@@ -1,3 +1,26 @@
+const apiUrl = "http://localhost:8081/api/products";
+
+async function loadProducts() {
+  const response = await fetch(apiUrl);
+  const products = await response.json();
+
+  const continer = document.getElementById(product-list);
+  continer.innerHTML = products 
+  .map(
+    (p) => `
+    <div class="product">
+      <img src="${p.imageUrl}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>${p.description}</p>
+      <strong>Rs. ${p.price}</strong>
+    </div>
+    `
+  )
+  .join("");
+}
+
+loadProducts();
+
 (function($) {
 
   "use strict";
